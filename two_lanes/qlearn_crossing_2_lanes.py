@@ -29,7 +29,6 @@ import numpy as  np
 from scipy.ndimage.interpolation import shift
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout
-from keras.optimizers import sgd
 
 import custom_plots
 
