@@ -23,7 +23,6 @@ import json
 # suppress the TensorFlow warning
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 
-import matplotlib.pyplot as plt
 import numpy as np
 from keras.models import model_from_json
 
