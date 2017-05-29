@@ -83,5 +83,6 @@ Training:
 `$ python3 qlearn_crossing.py`    
 use the --help or -h flag to see available options.
 
+Testing the trained model:  
 `$ python3 test_drive.py`  
 use the --help or -h flag to see available options.
