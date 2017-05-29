@@ -80,8 +80,8 @@ for t in trials:
 
 ## Running the code  
 Training:  
-$ python3 qlearn_crossing.py  
+`$ python3 qlearn_crossing.py`    
 use the --help or -h flag to see available options.
 
-$ python4 test_drive.py  
+`$ python4 test_drive.py`  
 use the --help or -h flag to see available options.
