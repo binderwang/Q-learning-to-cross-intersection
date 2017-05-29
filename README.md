@@ -13,23 +13,9 @@ Deep reinforcement learning combines a Markovian decision process with a deep ne
 ## Problem Statement
 This project’s goal is to use a reinforcement learning method called Q-learning to arrive at a policy that an autonomous driving agent can use to cross a simulated busy intersection without incident and in the minimum time possible. That is to say that our agent should always wait until a large enough gap in traffic appears before driving through it, and it should never miss such an opportunity when presented. Our agent should be neither too timid nor too brave.  
 
-## Training Environment
-The training environment must accurately reflect the problem to be solved as described above in the Problem Statement, after all this is how the training data are produced. Since Q-learning will be employed to learn the correct intersection crossing policy based on traffic, it is certain that a numerical representation of the intersection is required, as well as cars which move in front of the agent waiting to cross. Furthermore, since training and testing trials should be sometimes viewed, the environment state will be represented with a 2-dimensional numerical array. For simplicity, we will let different integer values represent pieces of different objects or environmental features:   
-* 0 - empty space (no car may drive here)
-* 1 - road (this is only for visualization)
-* 2 - cars passing in front of the agent
-* 3 - the agent
-
-The environment above has been developed and implemented as a Python class. The environment world is 21 pixels high by 21 pixels wide. All cars, including the agent, are of length 3 pixels. At each time step, each car moves forward one pixel; the agent upwards, and the traffic leftwards.
+The environment world is 21 pixels high by 21 pixels wide. All cars, including the agent, are of length 3 pixels. At each time step, each car moves forward one pixel; the agent upwards, and the traffic leftwards.
 
 In the environment, the agent is not required to stop if there happens to exist a gap in the traffic large enough, otherwise it must come to a stop until such a gap presents itself (that’s this agent’s *raison d’être*). Since vehicles advance by one pixel per time step, we can say that, in the case of a single lane, a gap in traffic must be at least 3 pixels wide in order for the agent to “squeeze through”.  
-
-That the complete policy to be learnt can so succinctly stated, probably means that we don’t really need to use RL to control the agent. Using deep Q learning for this scenario is a bit like using a sledgehammer to drive in a small nail in the wall for hanging a picture. To increase complexity a bit, a second lane will be added beside the first, with traffic flowing in the opposite direction. Both lanes will have cars randomly spawned at their respective entrance sides. With lanes flowing in opposite directions, unless the gaps are made a bit wider on average, crossing opportunities will only rarely present themselves and the agent will not earn enough rewards for crossing successfully. Therefore, an “average gap length” variable will be implemented to allow for adjustment so that the agent can be made to learn in a reasonable number of training epochs, say no more than a few thousand.  
-
-It must be admitted that the majority of the pixels in the grid world are only for display purposes. When evaluating the policy, it is useful to see the car approach the intersection, then stop and continue past, at least one whole car length. The dark pixels are there only because our array is two-dimensional. To learn the Q values, the neural network does not need anything more than the two lanes of traffic. For the sake of efficiency then, and the for sake of my low-end GPU, only the pixels from the two lanes of traffic will be used during training so that the input layer goes from size 21x21 to 2x21. [Correction: I have been testing with only the two lanes as input to the network and find that it will not converge. However by including one additional row, that just before the intersection, the training behaves as expected. I have to admit that I don't understand this.]  
-
-## Solution Statement
-Three major components of the proposed project are here described. First, methods in the environment class are outlined, then the artificial neural network used to learn the Q values is described, and finally the Experience Replay implementation, a key feature of Q-learning, is mentioned.  
 
 The environment is instantiated in the following manner:  
 env = Drive(grid_dims)  
@@ -42,24 +28,7 @@ env.at_intersection()
 If it is not at the intersection, then the only valid action is “forward”. Otherwise, the agent must decide whether to go forward or remain. When the action is determined, the agent action is implemented by:
 env.propagate_vert(action)
 The action input to this method is what we must learn.
-In Q-learning, deep neural networks are used to learn relevant features of the environment. Instead of determining through trial-and-error which of the many features should be used to most efficiently describe the state of the environment at each time step, the RL practitioner may simply input the whole 2-dimensional image to the network. After all, for our use-case, the image with the associated actions take completely describes the state of the system.
-The network output must be two numbers representing the probability to perform the two agent actions “forward” and “stay”.  The deep learning library Keras was used to build a model that the final implementation is expected to resemble. The model.summary() method shows the proposed deep learning architecture.  
 
-```
-Layer (type)                 Output Shape              Param #   
-==============================================================
-dense_1 (Dense)              (None, 441)               194922    
-dense_2 (Dense)              (None, 441)               194922    
-dropout_1 (Dropout)          (None, 441)               0         
-dense_3 (Dense)              (None, 441)               194922    
-dense_4 (Dense)              (None, 2)                 884       
-=============================================================
-Total params: 585,650.0
-Trainable params: 585,650.0
-Non-trainable params: 0.0
-```
-
-The output shapes of all layers but the final are of size 21x21 = 441. The output layer is of size two. A trained model given an image of our environment as an input would output two numbers representing the decision to move forward or to stay put. For any situation that the agent encounters, i.e. any possible state of the environment, one of these numbers should be much larger than the other.
 The Experience Replay functionality, and the reasons for using it is explained in reference 2 in this way:
 “When training the network, random minibatches from the replay memory are used instead of the most recent transition. This breaks the similarity of subsequent training samples, which otherwise might drive the network into a local minimum. Also experience replay makes the training task more similar to usual supervised learning, which simplifies debugging and testing the algorithm.”
 The experience replay implementation proposed here is almost identical to that Python class used in reference 3. Only one minor change is necessary to make it work with the output of the network described above.  
@@ -70,9 +39,6 @@ The following software have been used:
 * Matplotlib  
 * Keras  
 * TensorFlow  
-
-## Benchmark Model
-In the next section, evaluation metrics will be discussed by which the performance of the learned model can be quantified, but how should these results be interpreted? As a lower bound on our benchmark, we could say that the learned model must perform better than random chance. If the model performs better than random chance then we can claim that some learning was achieved. Shouldn’t it do much better though? Should it perform better at crossing the simulated intersection than an average human driver crossing an actual busy intersection? The comparison between a human driver and the simulated road is not useful for the following reason: our computer agent moves exactly one unit forward in one discrete time step, even when moving from a stop, whereas a car must often accelerate from a stop, building up speed over continuously flowing time. This could be approximated with a much more sophisticated simulation perhaps, but there are doubtless many other differences which make such a comparison problematic. Let us say then that that this agent should be so trained so that it only rarely fails out of thousands of trials. Just to assign a number, let us say that out of 1000 trial runs, we should observe at most 1 failure.  
 
 ## Evaluation Metrics
 To evaluate the learned model and the Q-value implementation, a python program was written which instantiates an environment and loads the trained model. This testing program presents the agent with thousands of randomly generated environments and records the following two evaluation metrics:
@@ -111,3 +77,11 @@ for t in trials:
             move agent forward
         keep count of values used for evaluation metrics
 ```
+
+## Running the code  
+Training:
+$ python3 qlearn_crossing.py
+use the --help or -h flag to see available options.
+
+$ python4 test_drive.py
+use the --help or -h flag to see available options.
