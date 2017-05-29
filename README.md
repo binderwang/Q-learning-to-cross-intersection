@@ -79,7 +79,7 @@ for t in trials:
 ```
 
 ## Running the code  
-Training:
+Training:  
 $ python3 qlearn_crossing.py
 use the --help or -h flag to see available options.
 
