@@ -109,5 +109,5 @@ if __name__ == "__main__":
         #print("Test # {:03d} | Success count {}".format(e, win_cnt))
         itest += 1
         
-    print('\nMissed Opportunites:{0:.2f} %'.format(100*ops_missed/opp_cnt))
+    print('\nMissed Opportunities:{0:.2f} %'.format(100*ops_missed/opp_cnt))
     print('\nSuccess Rate: {0:.2f} %'.format(100*win_cnt/numb_tests))                                                  
