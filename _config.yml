@@ -1,3 +1,5 @@
+title: Q-learning applied to a reinforcement learning (RL) self-driving agent
+description: Employ Q-learning with Python and Keras to teach an RL agent to cross busy intersections safely and efficiently.
 plugins:
   - jekyll-seo-tag
 
